@@ -19,6 +19,7 @@ pub unsafe fn init() {
             .set_start_time(BgWorkerStartTime::PostmasterStart)
             .set_restart_time(Some(Duration::from_secs(15)))
             .load();
+        log::info!("bgworker start");
         STARTED.store(true, Ordering::Relaxed);
     }
 }
@@ -70,9 +71,11 @@ extern "C" fn _vectors_main(_arg: pgrx::pg_sys::Datum) {
     let path = Path::new("pg_vectors");
     if path.try_exists().unwrap() {
         let worker = Worker::open(path.to_owned());
+        log::info!("worker opened");
         self::normal::normal(worker);
     } else {
         let worker = Worker::create(path.to_owned());
+        log::info!("worker created");
         self::normal::normal(worker);
     }
 }

@@ -47,9 +47,11 @@ pub fn normal(worker: Arc<Worker>) {
             }
             match sig {
                 libc::SIGHUP => {
+                    log::info!("receive SIGHUP");
                     std::process::exit(0);
                 }
                 libc::SIGTERM => {
+                    log::info!("receive SIGTERM");
                     std::process::exit(0);
                 }
                 _ => (),

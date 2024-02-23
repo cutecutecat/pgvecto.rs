@@ -46,6 +46,7 @@ impl Worker {
             path.join("indexes"),
             startup.get().indexes.iter().map(|s| s.to_string()),
         );
+        log::info!("clean finish");
         let mut indexes = HashMap::new();
         for &id in startup.get().indexes.iter() {
             let path = path.join("indexes").join(id.to_string());
