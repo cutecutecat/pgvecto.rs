@@ -10,6 +10,8 @@ logging.getLogger().setLevel(logging.INFO)
 
 def process_filter(p: psutil.Process) -> bool:
     cmdline = "".join(p.cmdline())
+    if "postgres" in cmdline:
+        print(p.pid, p.cmdline(), p.name())
     for case in FILTERS:
         if case not in cmdline:
             return False
