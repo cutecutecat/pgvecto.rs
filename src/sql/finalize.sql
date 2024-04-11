@@ -15,7 +15,7 @@ CREATE TYPE vector (
     ALIGNMENT = double
 );
 
-CREATE TYPE vecf16 (
+CREATE TYPE halfvec (
     INPUT = _vectors_vecf16_in,
     OUTPUT = _vectors_vecf16_out,
     RECEIVE = _vectors_vecf16_recv,
@@ -89,8 +89,8 @@ CREATE OPERATOR + (
 
 CREATE OPERATOR + (
     PROCEDURE = _vectors_vecf16_operator_add,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = +
 );
 
@@ -116,8 +116,8 @@ CREATE OPERATOR - (
 
 CREATE OPERATOR - (
     PROCEDURE = _vectors_vecf16_operator_minus,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec
 );
 
 CREATE OPERATOR - (
@@ -162,8 +162,8 @@ CREATE OPERATOR = (
 
 CREATE OPERATOR = (
     PROCEDURE = _vectors_vecf16_operator_eq,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = =,
     NEGATOR = <>,
     RESTRICT = eqsel,
@@ -212,8 +212,8 @@ CREATE OPERATOR <> (
 
 CREATE OPERATOR <> (
     PROCEDURE = _vectors_vecf16_operator_neq,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = <>,
     NEGATOR = =,
     RESTRICT = eqsel,
@@ -262,8 +262,8 @@ CREATE OPERATOR < (
 
 CREATE OPERATOR < (
     PROCEDURE = _vectors_vecf16_operator_lt,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = >,
     NEGATOR = >=,
     RESTRICT = scalarltsel,
@@ -312,8 +312,8 @@ CREATE OPERATOR > (
 
 CREATE OPERATOR > (
     PROCEDURE = _vectors_vecf16_operator_gt,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = <,
     NEGATOR = <=,
     RESTRICT = scalargtsel,
@@ -362,8 +362,8 @@ CREATE OPERATOR <= (
 
 CREATE OPERATOR <= (
     PROCEDURE = _vectors_vecf16_operator_lte,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = >=,
     NEGATOR = >,
     RESTRICT = scalarltsel,
@@ -412,8 +412,8 @@ CREATE OPERATOR >= (
 
 CREATE OPERATOR >= (
     PROCEDURE = _vectors_vecf16_operator_gte,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = <=,
     NEGATOR = <,
     RESTRICT = scalargtsel,
@@ -459,8 +459,8 @@ CREATE OPERATOR <-> (
 
 CREATE OPERATOR <-> (
     PROCEDURE = _vectors_vecf16_operator_l2,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = <->
 );
 
@@ -494,8 +494,8 @@ CREATE OPERATOR <#> (
 
 CREATE OPERATOR <#> (
     PROCEDURE = _vectors_vecf16_operator_dot,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = <#>
 );
 
@@ -529,8 +529,8 @@ CREATE OPERATOR <=> (
 
 CREATE OPERATOR <=> (
     PROCEDURE = _vectors_vecf16_operator_cosine,
-    LEFTARG = vecf16,
-    RIGHTARG = vecf16,
+    LEFTARG = halfvec,
+    RIGHTARG = halfvec,
     COMMUTATOR = <=>
 );
 
@@ -601,11 +601,11 @@ CREATE CAST (real[] AS vector)
 CREATE CAST (vector AS real[])
     WITH FUNCTION _vectors_cast_vecf32_to_array(vector, integer, boolean) AS IMPLICIT;
 
-CREATE CAST (vector AS vecf16)
+CREATE CAST (vector AS halfvec)
     WITH FUNCTION _vectors_cast_vecf32_to_vecf16(vector, integer, boolean);
 
-CREATE CAST (vecf16 AS vector)
-    WITH FUNCTION _vectors_cast_vecf16_to_vecf32(vecf16, integer, boolean);
+CREATE CAST (halfvec AS vector)
+    WITH FUNCTION _vectors_cast_vecf16_to_vecf32(halfvec, integer, boolean);
 
 CREATE CAST (vector AS svector)
     WITH FUNCTION _vectors_cast_vecf32_to_svecf32(vector, integer, boolean);
@@ -618,6 +618,12 @@ CREATE CAST (vector AS bvector)
 
 CREATE CAST (bvector AS vector)
     WITH FUNCTION _vectors_cast_bvecf32_to_vecf32(bvector, integer, boolean);
+
+CREATE CAST (bit AS bvector)
+    WITH FUNCTION _vectors_cast_bit_to_bvecf32(bit, integer, boolean);
+
+-- CREATE CAST (bvector AS bit)
+--     WITH FUNCTION _vectors_cast_bvecf32_to_bit(bvector, integer, boolean);
 
 CREATE CAST (veci8 AS vector)
     WITH FUNCTION _vectors_cast_veci8_to_vecf32(veci8, integer, boolean);
@@ -679,16 +685,16 @@ CREATE OPERATOR CLASS vector_cos_ops
     OPERATOR 1 <=> (vector, vector) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS vecf16_l2_ops
-    FOR TYPE vecf16 USING vectors FAMILY vecf16_l2_ops AS
-    OPERATOR 1 <-> (vecf16, vecf16) FOR ORDER BY float_ops;
+    FOR TYPE halfvec USING vectors FAMILY vecf16_l2_ops AS
+    OPERATOR 1 <-> (halfvec, halfvec) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS vecf16_dot_ops
-    FOR TYPE vecf16 USING vectors FAMILY vecf16_dot_ops AS
-    OPERATOR 1 <#> (vecf16, vecf16) FOR ORDER BY float_ops;
+    FOR TYPE halfvec USING vectors FAMILY vecf16_dot_ops AS
+    OPERATOR 1 <#> (halfvec, halfvec) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS vecf16_cos_ops
-    FOR TYPE vecf16 USING vectors FAMILY vecf16_cos_ops AS
-    OPERATOR 1 <=> (vecf16, vecf16) FOR ORDER BY float_ops;
+    FOR TYPE halfvec USING vectors FAMILY vecf16_cos_ops AS
+    OPERATOR 1 <=> (halfvec, halfvec) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS svector_l2_ops
     FOR TYPE svector USING vectors FAMILY svector_l2_ops AS

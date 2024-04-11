@@ -3,7 +3,7 @@
 -- List of shell types
 
 CREATE TYPE vector;
-CREATE TYPE vecf16;
+CREATE TYPE halfvec;
 CREATE TYPE svector;
 CREATE TYPE bvector;
 CREATE TYPE veci8;

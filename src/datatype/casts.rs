@@ -1,3 +1,4 @@
+use crate::datatype::bit::Bit;
 use crate::datatype::memory_bvecf32::{BVecf32Input, BVecf32Output};
 use crate::datatype::memory_svecf32::{SVecf32Input, SVecf32Output};
 use crate::datatype::memory_vecf16::{Vecf16Input, Vecf16Output};
@@ -7,6 +8,7 @@ use crate::error::*;
 use base::scalar::*;
 use base::vector::*;
 use num_traits::Zero;
+use pgrx::pg_sys;
 
 #[pgrx::pg_extern(immutable, strict, parallel_safe)]
 fn _vectors_cast_array_to_vecf32(
@@ -116,6 +118,32 @@ fn _vectors_cast_bvecf32_to_vecf32(
         .map(|x| F32(x as u32 as f32))
         .collect();
     Vecf32Output::new(Vecf32Borrowed::new(&data))
+}
+
+// #[pgrx::pg_extern(immutable, strict, parallel_safe)]
+// fn _vectors_cast_bvecf32_to_bit(
+//     vector: BVecf32Input<'_>,
+//     _typmod: i32,
+//     _explicit: bool,
+// ) -> pg_sys::varlena {
+//     vector.for_borrow().iter().map(|x| x as u8).collect()
+//     pgrx::varlena::rust_byte_slice_to_bytea(ptr, len)
+// }
+
+#[pgrx::pg_extern(immutable, strict, parallel_safe)]
+fn _vectors_cast_bit_to_bvecf32(vector: Bit, _typmod: i32, _explicit: bool) -> BVecf32Output {
+    let mut values = BVecf32Owned::new_zeroed(vector.bit_len as u16);
+    let length = vector.len();
+    pgrx::warning!("{:?}", length);
+    let elements = vector.varbits();
+    for (i, &element) in elements.iter().enumerate() {
+        pgrx::warning!("ele {:?} -> {:?}", i, element);
+        match element {
+            false => values.set(i, false),
+            true => values.set(i, true),
+        }
+    }
+    BVecf32Output::new(values.for_borrow())
 }
 
 #[pgrx::pg_extern(immutable, strict, parallel_safe)]

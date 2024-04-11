@@ -97,3 +97,9 @@ fn _vectors_bvecf32_operator_jaccard(lhs: BVecf32Input<'_>, rhs: BVecf32Input<'_
     check_matched_dims(lhs.dims() as _, rhs.dims() as _);
     BVecf32Jaccard::distance(lhs.for_borrow(), rhs.for_borrow()).to_f32()
 }
+
+// #[pgrx::pg_extern(immutable, strict, parallel_safe)]
+// fn _vectors_bvecf32_operator_jaccard(lhs: BVecf32Input<'_>, rhs: pgrx::bitvec) -> f32 {
+//     check_matched_dims(lhs.dims() as _, rhs.dims() as _);
+//     BVecf32Jaccard::distance(lhs.for_borrow(), rhs.for_borrow()).to_f32()
+// }

@@ -138,7 +138,7 @@ impl IntoDatum for Vecf16Output {
     fn type_oid() -> Oid {
         let namespace = pgrx::pg_catalog::PgNamespace::search_namespacename(c"vectors").unwrap();
         let namespace = namespace.get().expect("pgvecto.rs is not installed.");
-        let t = pgrx::pg_catalog::PgType::search_typenamensp(c"vecf16", namespace.oid()).unwrap();
+        let t = pgrx::pg_catalog::PgType::search_typenamensp(c"halfvec", namespace.oid()).unwrap();
         let t = t.get().expect("pg_catalog is broken.");
         t.oid()
     }
@@ -146,18 +146,18 @@ impl IntoDatum for Vecf16Output {
 
 unsafe impl SqlTranslatable for Vecf16Input<'_> {
     fn argument_sql() -> Result<SqlMapping, ArgumentError> {
-        Ok(SqlMapping::As(String::from("vecf16")))
+        Ok(SqlMapping::As(String::from("halfvec")))
     }
     fn return_sql() -> Result<Returns, ReturnsError> {
-        Ok(Returns::One(SqlMapping::As(String::from("vecf16"))))
+        Ok(Returns::One(SqlMapping::As(String::from("halfvec"))))
     }
 }
 
 unsafe impl SqlTranslatable for Vecf16Output {
     fn argument_sql() -> Result<SqlMapping, ArgumentError> {
-        Ok(SqlMapping::As(String::from("vecf16")))
+        Ok(SqlMapping::As(String::from("halfvec")))
     }
     fn return_sql() -> Result<Returns, ReturnsError> {
-        Ok(Returns::One(SqlMapping::As(String::from("vecf16"))))
+        Ok(Returns::One(SqlMapping::As(String::from("halfvec"))))
     }
 }
