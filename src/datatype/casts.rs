@@ -120,24 +120,17 @@ fn _vectors_cast_bvecf32_to_vecf32(
     Vecf32Output::new(Vecf32Borrowed::new(&data))
 }
 
-// #[pgrx::pg_extern(immutable, strict, parallel_safe)]
-// fn _vectors_cast_bvecf32_to_bit(
-//     vector: BVecf32Input<'_>,
-//     _typmod: i32,
-//     _explicit: bool,
-// ) -> pg_sys::varlena {
-//     vector.for_borrow().iter().map(|x| x as u8).collect()
-//     pgrx::varlena::rust_byte_slice_to_bytea(ptr, len)
-// }
+#[pgrx::pg_extern(immutable, strict, parallel_safe)]
+fn _vectors_cast_bvecf32_to_bit(vector: BVecf32Input<'_>, _typmod: i32, _explicit: bool) -> Bit {
+    let data: Vec<bool> = vector.for_borrow().iter().collect();
+    Bit { data }
+}
 
 #[pgrx::pg_extern(immutable, strict, parallel_safe)]
 fn _vectors_cast_bit_to_bvecf32(vector: Bit, _typmod: i32, _explicit: bool) -> BVecf32Output {
-    let mut values = BVecf32Owned::new_zeroed(vector.bit_len as u16);
-    let length = vector.len();
-    pgrx::warning!("{:?}", length);
-    let elements = vector.varbits();
+    let mut values = BVecf32Owned::new_zeroed(vector.data.len() as u16);
+    let elements = vector.data;
     for (i, &element) in elements.iter().enumerate() {
-        pgrx::warning!("ele {:?} -> {:?}", i, element);
         match element {
             false => values.set(i, false),
             true => values.set(i, true),

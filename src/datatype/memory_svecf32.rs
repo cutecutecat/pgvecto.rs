@@ -169,18 +169,18 @@ impl IntoDatum for SVecf32Output {
 
 unsafe impl SqlTranslatable for SVecf32Input<'_> {
     fn argument_sql() -> Result<SqlMapping, ArgumentError> {
-        Ok(SqlMapping::As(String::from("svector")))
+        Ok(SqlMapping::As(String::from("sparsevec")))
     }
     fn return_sql() -> Result<Returns, ReturnsError> {
-        Ok(Returns::One(SqlMapping::As(String::from("svector"))))
+        Ok(Returns::One(SqlMapping::As(String::from("sparsevec"))))
     }
 }
 
 unsafe impl SqlTranslatable for SVecf32Output {
     fn argument_sql() -> Result<SqlMapping, ArgumentError> {
-        Ok(SqlMapping::As(String::from("svector")))
+        Ok(SqlMapping::As(String::from("sparsevec")))
     }
     fn return_sql() -> Result<Returns, ReturnsError> {
-        Ok(Returns::One(SqlMapping::As(String::from("svector"))))
+        Ok(Returns::One(SqlMapping::As(String::from("sparsevec"))))
     }
 }

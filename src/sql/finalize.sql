@@ -28,7 +28,7 @@ CREATE TYPE halfvec (
     ALIGNMENT = double
 );
 
-CREATE TYPE svector (
+CREATE TYPE sparsevec (
     INPUT = _vectors_svecf32_in,
     OUTPUT = _vectors_svecf32_out,
     RECEIVE = _vectors_svecf32_recv,
@@ -96,8 +96,8 @@ CREATE OPERATOR + (
 
 CREATE OPERATOR + (
     PROCEDURE = _vectors_svecf32_operator_add,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = +
 );
 
@@ -122,8 +122,8 @@ CREATE OPERATOR - (
 
 CREATE OPERATOR - (
     PROCEDURE = _vectors_svecf32_operator_minus,
-    LEFTARG = svector,
-    RIGHTARG = svector
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec
 );
 
 CREATE OPERATOR - (
@@ -172,8 +172,8 @@ CREATE OPERATOR = (
 
 CREATE OPERATOR = (
     PROCEDURE = _vectors_svecf32_operator_eq,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = =,
     NEGATOR = <>,
     RESTRICT = eqsel,
@@ -222,8 +222,8 @@ CREATE OPERATOR <> (
 
 CREATE OPERATOR <> (
     PROCEDURE = _vectors_svecf32_operator_neq,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = <>,
     NEGATOR = =,
     RESTRICT = eqsel,
@@ -272,8 +272,8 @@ CREATE OPERATOR < (
 
 CREATE OPERATOR < (
     PROCEDURE = _vectors_svecf32_operator_lt,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = >,
     NEGATOR = >=,
     RESTRICT = scalarltsel,
@@ -322,8 +322,8 @@ CREATE OPERATOR > (
 
 CREATE OPERATOR > (
     PROCEDURE = _vectors_svecf32_operator_gt,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = <,
     NEGATOR = <=,
     RESTRICT = scalargtsel,
@@ -372,8 +372,8 @@ CREATE OPERATOR <= (
 
 CREATE OPERATOR <= (
     PROCEDURE = _vectors_svecf32_operator_lte,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = >=,
     NEGATOR = >,
     RESTRICT = scalarltsel,
@@ -422,8 +422,8 @@ CREATE OPERATOR >= (
 
 CREATE OPERATOR >= (
     PROCEDURE = _vectors_svecf32_operator_gte,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = <=,
     NEGATOR = <,
     RESTRICT = scalargtsel,
@@ -466,8 +466,8 @@ CREATE OPERATOR <-> (
 
 CREATE OPERATOR <-> (
     PROCEDURE = _vectors_svecf32_operator_l2,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = <->
 );
 
@@ -501,8 +501,8 @@ CREATE OPERATOR <#> (
 
 CREATE OPERATOR <#> (
     PROCEDURE = _vectors_svecf32_operator_dot,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = <#>
 );
 
@@ -536,8 +536,8 @@ CREATE OPERATOR <=> (
 
 CREATE OPERATOR <=> (
     PROCEDURE = _vectors_svecf32_operator_cosine,
-    LEFTARG = svector,
-    RIGHTARG = svector,
+    LEFTARG = sparsevec,
+    RIGHTARG = sparsevec,
     COMMUTATOR = <=>
 );
 
@@ -567,7 +567,7 @@ CREATE OPERATOR <~> (
 CREATE FUNCTION pgvectors_upgrade() RETURNS void
 STRICT PARALLEL SAFE LANGUAGE c AS 'MODULE_PATHNAME', '_vectors_pgvectors_upgrade_wrapper';
 
-CREATE FUNCTION to_svector("dims" INT, "indexes" INT[], "values" real[]) RETURNS svector
+CREATE FUNCTION to_svector("dims" INT, "indexes" INT[], "values" real[]) RETURNS sparsevec
 IMMUTABLE STRICT PARALLEL SAFE LANGUAGE c AS 'MODULE_PATHNAME', '_vectors_to_svector_wrapper';
 
 CREATE FUNCTION to_veci8("len" INT, "alpha" real, "offset" real, "values" INT[]) RETURNS veci8
@@ -607,11 +607,11 @@ CREATE CAST (vector AS halfvec)
 CREATE CAST (halfvec AS vector)
     WITH FUNCTION _vectors_cast_vecf16_to_vecf32(halfvec, integer, boolean);
 
-CREATE CAST (vector AS svector)
+CREATE CAST (vector AS sparsevec)
     WITH FUNCTION _vectors_cast_vecf32_to_svecf32(vector, integer, boolean);
 
-CREATE CAST (svector AS vector)
-    WITH FUNCTION _vectors_cast_svecf32_to_vecf32(svector, integer, boolean);
+CREATE CAST (sparsevec AS vector)
+    WITH FUNCTION _vectors_cast_svecf32_to_vecf32(sparsevec, integer, boolean);
 
 CREATE CAST (vector AS bvector)
     WITH FUNCTION _vectors_cast_vecf32_to_bvecf32(vector, integer, boolean);
@@ -622,8 +622,8 @@ CREATE CAST (bvector AS vector)
 CREATE CAST (bit AS bvector)
     WITH FUNCTION _vectors_cast_bit_to_bvecf32(bit, integer, boolean);
 
--- CREATE CAST (bvector AS bit)
---     WITH FUNCTION _vectors_cast_bvecf32_to_bit(bvector, integer, boolean);
+CREATE CAST (bvector AS bit)
+    WITH FUNCTION _vectors_cast_bvecf32_to_bit(bvector, integer, boolean);
 
 CREATE CAST (veci8 AS vector)
     WITH FUNCTION _vectors_cast_veci8_to_vecf32(veci8, integer, boolean);
@@ -697,16 +697,16 @@ CREATE OPERATOR CLASS vecf16_cos_ops
     OPERATOR 1 <=> (halfvec, halfvec) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS svector_l2_ops
-    FOR TYPE svector USING vectors FAMILY svector_l2_ops AS
-    OPERATOR 1 <-> (svector, svector) FOR ORDER BY float_ops;
+    FOR TYPE sparsevec USING vectors FAMILY svector_l2_ops AS
+    OPERATOR 1 <-> (sparsevec, sparsevec) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS svector_dot_ops
-    FOR TYPE svector USING vectors FAMILY svector_dot_ops AS
-    OPERATOR 1 <#> (svector, svector) FOR ORDER BY float_ops;
+    FOR TYPE sparsevec USING vectors FAMILY svector_dot_ops AS
+    OPERATOR 1 <#> (sparsevec, sparsevec) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS svector_cos_ops
-    FOR TYPE svector USING vectors FAMILY svector_cos_ops AS
-    OPERATOR 1 <=> (svector, svector) FOR ORDER BY float_ops;
+    FOR TYPE sparsevec USING vectors FAMILY svector_cos_ops AS
+    OPERATOR 1 <=> (sparsevec, sparsevec) FOR ORDER BY float_ops;
 
 CREATE OPERATOR CLASS bvector_l2_ops
     FOR TYPE bvector USING vectors FAMILY bvector_l2_ops AS

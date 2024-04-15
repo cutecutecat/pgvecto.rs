@@ -10,15 +10,16 @@ use std::ffi::{CStr, CString};
 
 #[pgrx::pg_extern(immutable, strict, parallel_safe)]
 fn _vectors_svecf32_in(input: &CStr, _oid: Oid, typmod: i32) -> SVecf32Output {
-    use crate::utils::parse::parse_vector;
+    use crate::utils::parse::parse_pgvector_svector;
     let reserve = Typmod::parse_from_i32(typmod)
         .unwrap()
         .dims()
         .map(|x| x.get())
         .unwrap_or(0);
-    let v = parse_vector(input.to_bytes(), reserve as usize, |s| {
+    let v = parse_pgvector_svector(input.to_bytes(), reserve as usize, |s| {
         s.parse::<F32>().ok()
     });
+    pgrx::warning!("{:?}", v);
     match v {
         Err(e) => {
             bad_literal(&e.to_string());
@@ -40,16 +41,22 @@ fn _vectors_svecf32_in(input: &CStr, _oid: Oid, typmod: i32) -> SVecf32Output {
 
 #[pgrx::pg_extern(immutable, strict, parallel_safe)]
 fn _vectors_svecf32_out(vector: SVecf32Input<'_>) -> CString {
+    let dims = vector.for_borrow().dims();
     let mut buffer = String::new();
-    buffer.push('[');
+    buffer.push('{');
     let vec = vector.for_borrow().to_vec();
-    let mut iter = vec.iter();
-    if let Some(x) = iter.next() {
-        buffer.push_str(format!("{}", x).as_str());
+    let mut need_splitter = true;
+    for (i, x) in vec.iter().enumerate() {
+        if *x != F32::zero() {
+            match need_splitter {
+                true => {
+                    buffer.push_str(format!("{}:{}", i + 1, x).as_str());
+                    need_splitter = false;
+                }
+                false => buffer.push_str(format!(", {}:{}", i + 1, x).as_str()),
+            }
+        }
     }
-    for x in iter {
-        buffer.push_str(format!(", {}", x).as_str());
-    }
-    buffer.push(']');
+    buffer.push_str(format!("}}/{}", dims).as_str());
     CString::new(buffer).unwrap()
 }
