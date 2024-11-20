@@ -3,14 +3,14 @@ ARG FROM_TAG
 ARG SCHEMA
 ARG TARGETARCH
 
-FROM modelzai/pgvecto-rs-binary:${FROM_TAG}-${TARGETARCH}-${SCHEMA} as binary
+FROM starkind/pgvecto-rs-binary:${FROM_TAG}-${TARGETARCH}-${SCHEMA} as binary
 
 FROM rust:1.78-bookworm as builder
 ARG TRUNK_VER=0.12.25
 ENV CARGO_REGISTRIES_CRATES_IO_PROTOCOL sparse 
 RUN cargo install --version $TRUNK_VER pg-trunk
 
-FROM modelzai/pg-slim:${PG_MAJOR}-${TARGETARCH}
+FROM starkind/pg-slim:${PG_MAJOR}-${TARGETARCH}
 ARG PG_MAJOR
 ARG LIB_DIR
 ARG ALTDIR=/var/lib/postgresql/data/tensorchord
