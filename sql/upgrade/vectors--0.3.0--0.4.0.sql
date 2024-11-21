@@ -907,16 +907,40 @@ IMMUTABLE STRICT PARALLEL SAFE
 LANGUAGE c /* Rust */
 AS 'MODULE_PATHNAME', '_vectors_cast_bvector_to_vecf32_wrapper';
 
--- src/datatype/casts.rs:10
--- vectors::datatype::casts::_vectors_cast_array_to_vecf32
-CREATE OR REPLACE FUNCTION "_vectors_cast_array_to_vecf32"(
-    "array" real[], /* pgrx::datum::array::Array<f32> */
-    "typmod" INT, /* i32 */
-    "_explicit" bool /* bool */
-) RETURNS vector /* vectors::datatype::memory_vecf32::Vecf32Output */
-IMMUTABLE STRICT PARALLEL SAFE
-LANGUAGE c /* Rust */
-AS 'MODULE_PATHNAME', '_vectors_cast_array_to_vecf32_wrapper';
+-- There might be a conflict of `typmod` or `_typmod`
+DO $$
+DECLARE
+    func_arg_2 TEXT;
+BEGIN
+    SELECT parameter_name INTO func_arg_2
+    FROM information_schema.routines
+        LEFT JOIN information_schema.parameters ON routines.specific_name=parameters.specific_name
+    WHERE routines.specific_schema='vectors' AND routines.routine_name='_vectors_cast_array_to_vecf32' AND parameters.ordinal_position=2 
+    ORDER BY routines.routine_name, parameters.ordinal_position;
+    IF func_arg_2 = '_typmod' THEN
+        -- src/datatype/casts.rs:10
+        -- vectors::datatype::casts::_vectors_cast_array_to_vecf32
+        CREATE OR REPLACE FUNCTION "_vectors_cast_array_to_vecf32"(
+            "array" real[], /* pgrx::datum::array::Array<f32> */
+            "_typmod" INT, /* i32 */
+            "_explicit" bool /* bool */
+        ) RETURNS vector /* vectors::datatype::memory_vecf32::Vecf32Output */
+        IMMUTABLE STRICT PARALLEL SAFE
+        LANGUAGE c /* Rust */
+        AS 'MODULE_PATHNAME', '_vectors_cast_array_to_vecf32_wrapper';
+    ELSE
+        -- src/datatype/casts.rs:10
+        -- vectors::datatype::casts::_vectors_cast_array_to_vecf32
+        CREATE OR REPLACE FUNCTION "_vectors_cast_array_to_vecf32"(
+            "array" real[], /* pgrx::datum::array::Array<f32> */
+            "typmod" INT, /* i32 */
+            "_explicit" bool /* bool */
+        ) RETURNS vector /* vectors::datatype::memory_vecf32::Vecf32Output */
+        IMMUTABLE STRICT PARALLEL SAFE
+        LANGUAGE c /* Rust */
+        AS 'MODULE_PATHNAME', '_vectors_cast_array_to_vecf32_wrapper';
+    END IF;
+END $$;
 
 -- src/datatype/subscript_bvector.rs:10
 -- vectors::datatype::subscript_bvector::_vectors_bvector_subscript
